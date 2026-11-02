@@ -2,6 +2,7 @@ from launch import LaunchDescription
 from launch_ros.actions import Node
 from launch.actions import DeclareLaunchArgument
 from launch.substitutions import LaunchConfiguration
+from launch.conditions import IfCondition
 from launch.actions import SetEnvironmentVariable
 from ament_index_python.packages import get_package_share_directory
 
@@ -17,6 +18,11 @@ def generate_launch_description():
             # set log color
             SetEnvironmentVariable(name='RCUTILS_COLORIZED_OUTPUT', value='1'),
 
+            DeclareLaunchArgument(
+                'rviz',
+                default_value='false',
+                description='Start RViz alongside the LiDAR driver'
+            ),
             DeclareLaunchArgument(
                 'config_path',
                 default_value='',
@@ -226,6 +232,26 @@ def generate_launch_description():
                     {'transform_matrix': LaunchConfiguration('transform_matrix')},
                 ],
             ),
-            Node(namespace='rviz2', package='rviz2', executable='rviz2', arguments=['-d',rviz_config])
+            Node(
+                namespace='rviz2', package='rviz2', executable='rviz2',
+                arguments=['-d', rviz_config],
+                condition=IfCondition(LaunchConfiguration('rviz'))
+            )
         ]
     )
+
+
+if __name__ == '__main__':
+    import argparse
+
+    parser = argparse.ArgumentParser(
+        description='Launch the Seyond driver, optionally with RViz.',
+        epilog='Additional ROS launch arguments can be passed as name:=value.'
+    )
+    parser.add_argument('--rviz', action='store_true', help='Start RViz')
+    args, launch_args = parser.parse_known_args()
+    command = ['ros2', 'launch', os.path.abspath(__file__)]
+    if args.rviz:
+        command.append('rviz:=true')
+    command.extend(launch_args)
+    os.execvp(command[0], command)
