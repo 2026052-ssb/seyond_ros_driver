@@ -150,3 +150,19 @@ ros2 launch seyond start.py
 [Create deb](doc/08_how_to_create_deb.md)
 
 [Fuse multiple lidars](doc/07_how_to_fuse_multiple_lidars.md)
+
+## Local SDK receive-stall fix
+
+The SDK submodule includes a local fix that removes synchronous HTTP mode queries from resource statistics on the UDP receive path. Packet/bandwidth counters remain available; the mode-conditioned low-bandwidth warning is omitted. See the [SDK README](src/seyond_lidar_ros/src/seyond_sdk/README.md#local-fix-nonblocking-resource-statistics) for the regression test and limitations. This change does not establish that upstream interruptions or PTP synchronization faults are resolved.
+
+Rebuild the SDK and relink the ROS 2 driver; reusing an existing SDK archive or an already running process does not apply source changes:
+
+```bash
+source /opt/ros/jazzy/setup.bash
+cmake -S src/seyond_lidar_ros/src/seyond_sdk \
+  -B src/seyond_lidar_ros/src/seyond_sdk/build_unix -DBUILD_NONBLOCKING_STATS_TEST=ON
+cmake --build src/seyond_lidar_ros/src/seyond_sdk/build_unix \
+  --target resource_stats_nonblocking_test -j2
+./src/seyond_lidar_ros/src/seyond_sdk/build_unix/resource_stats_nonblocking_test
+colcon build --packages-select seyond --cmake-clean-first
+```
