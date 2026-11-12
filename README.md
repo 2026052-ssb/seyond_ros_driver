@@ -166,3 +166,20 @@ cmake --build src/seyond_lidar_ros/src/seyond_sdk/build_unix \
 ./src/seyond_lidar_ros/src/seyond_sdk/build_unix/resource_stats_nonblocking_test
 colcon build --packages-select seyond --cmake-clean-first
 ```
+
+# SensorForge 연동
+
+SDK는 하위 submodule입니다. 최초 checkout 후 고정된 SDK 커밋을 초기화합니다.
+
+```bash
+git submodule update --init --recursive
+```
+
+센서별 namespace 지정 (기본값은 빈 문자열)
+
+```bash
+source install/setup.bash
+ros2 launch seyond start.py lidar_ip:=172.168.1.10 namespace:=sensor_front
+```
+
+SensorForge에서는 프로젝트 루트의 `npm run drivers:build`로 빌드합니다. 등록된 센서 IP와 namespace를 전달하며 기존 포트·기본 센서 설정은 유지합니다.

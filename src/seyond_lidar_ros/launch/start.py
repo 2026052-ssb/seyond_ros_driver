@@ -15,6 +15,7 @@ def generate_launch_description():
 
     return LaunchDescription(
         [
+            DeclareLaunchArgument('namespace', default_value='', description='ROS namespace'),
             # set log color
             SetEnvironmentVariable(name='RCUTILS_COLORIZED_OUTPUT', value='1'),
 
@@ -194,6 +195,7 @@ def generate_launch_description():
             
 
             Node(
+                namespace=LaunchConfiguration('namespace'),
                 package="seyond",
                 executable="seyond_node",
                 parameters=[
